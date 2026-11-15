@@ -1,5 +1,7 @@
 package net.stackanvil.deep.module.impl;
 
+import net.stackanvil.deep.notebot.NotebotSong;
+import net.stackanvil.deep.notebot.SongNote;
 import net.stackanvil.deep.module.Module;
 import net.stackanvil.deep.module.ModuleManager;
 import net.stackanvil.deep.module.ModuleRegistry;
@@ -93,19 +95,20 @@ class MeteorExpansionModulesTest {
 
     @Test
     void notebotKeepsSongTimingAndDuplicateNotes() {
-        NotebotModule.ParsedSong song = NotebotModule.parseSong("0 2:4+7 2:4 3:4+4");
+        NotebotSong song = NotebotModule.parseSong("0 2:4+7 2:4 3:4+4");
 
         assertEquals(Map.of(
-                0, List.of(0),
-                2, List.of(4, 7, 4),
-                3, List.of(4, 4)
+                0, List.of(SongNote.any(0)),
+                2, List.of(SongNote.any(4), SongNote.any(7), SongNote.any(4)),
+                3, List.of(SongNote.any(4), SongNote.any(4))
         ), song.notesByTick());
         assertEquals(3, song.lastTick());
         assertEquals(Map.of(
-                0, 1,
-                4, 2,
-                7, 1
-        ), song.requiredBlocksByNote());
+                SongNote.any(0), 1,
+                SongNote.any(4), 2,
+                SongNote.any(7), 1
+        ), song.requiredBlocks());
+        assertFalse(song.gameTickTiming());
     }
 
     @Test

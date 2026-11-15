@@ -1,7 +1,25 @@
 package net.stackanvil.deep.module.impl;
 
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.network.protocol.game.ClientboundSoundPacket;
+import net.minecraft.network.protocol.game.ServerboundPlayerActionPacket;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.item.component.SwingAnimation;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.NoteBlock;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.NoteBlockInstrument;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.Vec3;
 import net.stackanvil.deep.module.Module;
 import net.stackanvil.deep.module.ModuleCategory;
+import net.stackanvil.deep.notebot.NotebotSong;
+import net.stackanvil.deep.notebot.SongFiles;
+import net.stackanvil.deep.notebot.SongNote;
 import net.stackanvil.deep.rotation.Rotation;
 import net.stackanvil.deep.rotation.RotationManager;
 import net.stackanvil.deep.rotation.RotationRequest;
@@ -10,20 +28,6 @@ import net.stackanvil.deep.setting.BooleanSetting;
 import net.stackanvil.deep.setting.NumberSetting;
 import net.stackanvil.deep.setting.StringListSetting;
 import net.stackanvil.deep.setting.StringSetting;
-import net.minecraft.client.Minecraft;
-import net.minecraft.world.item.component.SwingAnimation;
-import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
-import net.minecraft.network.protocol.game.ClientboundSoundPacket;
-import net.minecraft.network.protocol.game.ServerboundPlayerActionPacket;
-import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResult;
-import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.NoteBlock;
-import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.phys.BlockHitResult;
-import net.minecraft.world.phys.Vec3;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -36,9 +40,17 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.SequencedMap;
 import java.util.Set;
+import java.util.TreeMap;
+import java.util.stream.Collectors;
 
 public final class NotebotModule extends Module {
 
+    private final StringSetting songFile = this.setting(StringSetting.from(StringSetting.builder()
+            .id("song_file")
+            .name("Song File")
+            .defaultValue("")
+            .description("Song file in config/deep/songs (.nbs, .mid, .txt, .mcsp). Leave empty to play the notes below.")
+            .build()));
     private final StringSetting song = this.setting(StringSetting.from(StringSetting.builder()
             .id("song")
             .name("Song")
@@ -57,6 +69,7 @@ public final class NotebotModule extends Module {
             .min(0.0)
             .max(40.0)
             .step(1.0)
+            .description("Ticks between notes for typed songs. Song files keep their own tempo.")
             .build()));
     private final NumberSetting tuneDelay = this.setting(NumberSetting.from(NumberSetting.builder()
             .id("tune_delay")
@@ -94,9 +107,12 @@ public final class NotebotModule extends Module {
             .name("Loop")
             .defaultValue(true)
             .build()));
+    private final SongFiles songFiles = SongFiles.defaults();
     private Stage stage = Stage.PREPARE;
-    private ParsedSong parsedSong = ParsedSong.EMPTY;
-    private final Map<Integer, List<BlockPos>> blocksByNote = new HashMap<>();
+    private NotebotSong parsedSong = NotebotSong.EMPTY;
+    private String loadedFile;
+    private NotebotSong loadedFileSong = NotebotSong.EMPTY;
+    private final Map<SongNote, List<BlockPos>> blocksByNote = new HashMap<>();
     private final Map<BlockPos, Integer> targetNotes = new HashMap<>();
     private final SequencedMap<BlockPos, Integer> tuneHits = new LinkedHashMap<>();
     private final Map<BlockPos, Integer> observedNotes = new HashMap<>();
@@ -106,6 +122,24 @@ public final class NotebotModule extends Module {
     public NotebotModule() {
         super("notebot", "Notebot", ModuleCategory.MISC);
         this.legacyNotes.visibleWhen(() -> false);
+        this.song.visibleWhen(() -> this.songFile.value().isBlank());
+    }
+
+    public SongFiles songFiles() {
+        return this.songFiles;
+    }
+
+    /**
+     * Selects a song file and restarts playback from the beginning.
+     */
+    public void selectSong(final String fileName) {
+        this.songFile.value(fileName == null ? "" : fileName);
+        this.loadedFile = null;
+        this.resetRuntime();
+    }
+
+    public String selectedSong() {
+        return this.songFile.value();
     }
 
     @Override
@@ -157,15 +191,17 @@ public final class NotebotModule extends Module {
 
     private boolean prepare(final Minecraft client, final LocalPlayer player) {
         this.resetRuntime();
-        this.parsedSong = parseSong(this.songText());
+        this.parsedSong = this.loadSong();
         if (this.parsedSong.empty()) {
-            this.debugStatus("No notes configured");
+            if (this.songFile.value().isBlank()) {
+                this.debugStatus("No notes configured");
+            }
             return false;
         }
         List<ScannedNoteBlock> scannedBlocks = this.scanNoteBlocks(client, player);
         NoteBlockPlan plan = NoteBlockPlan.create(this.parsedSong, scannedBlocks);
         if (!plan.possible()) {
-            this.debugStatus("Need " + plan.requiredBlocks() + " note blocks, found " + scannedBlocks.size());
+            this.debugStatus("Missing note blocks: " + describeShortfall(plan.shortfall()));
             return false;
         }
         this.blocksByNote.putAll(plan.blocksByNote());
@@ -178,10 +214,31 @@ public final class NotebotModule extends Module {
         return true;
     }
 
+    private NotebotSong loadSong() {
+        String file = this.songFile.value().trim();
+        if (file.isEmpty()) {
+            return parseSong(this.songText());
+        }
+        if (!file.equals(this.loadedFile)) {
+            this.loadedFile = file;
+            try {
+                this.loadedFileSong = this.songFiles.load(file);
+            } catch (Exception exception) {
+                this.loadedFileSong = NotebotSong.EMPTY;
+                this.debugStatus("Could not load " + file + ": " + exception.getMessage());
+                return NotebotSong.EMPTY;
+            }
+        }
+        if (this.loadedFileSong.empty()) {
+            this.debugStatus(file + " has no playable notes");
+        }
+        return this.loadedFileSong;
+    }
+
     private void tuneNextBlock(final Minecraft client, final LocalPlayer player) {
         if (this.tuneHits.isEmpty()) {
             this.stage = Stage.PLAY;
-            this.cooldownTicks = this.delay.value().intValue();
+            this.cooldownTicks = this.parsedSong.gameTickTiming() ? 0 : this.delay.value().intValue();
             this.debugStatus("playing");
             return;
         }
@@ -227,9 +284,9 @@ public final class NotebotModule extends Module {
             }
             this.songTick = 0;
         }
-        List<Integer> notes = this.parsedSong.notesByTick().getOrDefault(this.songTick, List.of());
+        List<SongNote> notes = this.parsedSong.notesByTick().getOrDefault(this.songTick, List.of());
         Set<BlockPos> usedBlocks = new HashSet<>();
-        for (int note : notes) {
+        for (SongNote note : notes) {
             BlockPos pos = this.nextBlockForNote(note, usedBlocks);
             if (pos == null) {
                 continue;
@@ -251,10 +308,10 @@ public final class NotebotModule extends Module {
         this.debugValue("tick", this.songTick + "/" + this.parsedSong.lastTick());
         this.debugValue("notes", notes.size());
         this.songTick++;
-        this.cooldownTicks = this.delay.value().intValue();
+        this.cooldownTicks = this.parsedSong.gameTickTiming() ? 0 : this.delay.value().intValue();
     }
 
-    private BlockPos nextBlockForNote(final int note, final Set<BlockPos> usedBlocks) {
+    private BlockPos nextBlockForNote(final SongNote note, final Set<BlockPos> usedBlocks) {
         List<BlockPos> blocks = this.blocksByNote.getOrDefault(note, List.of());
         for (BlockPos block : blocks) {
             if (!usedBlocks.contains(block)) {
@@ -276,10 +333,11 @@ public final class NotebotModule extends Module {
                         continue;
                     }
                     BlockState state = client.level.getBlockState(pos);
-                    if (!state.getValue(NoteBlock.INSTRUMENT).isTunable()) {
+                    NoteBlockInstrument instrument = state.getValue(NoteBlock.INSTRUMENT);
+                    if (!instrument.isTunable()) {
                         continue;
                     }
-                    blocks.add(new ScannedNoteBlock(pos.immutable(), state.getValue(NoteBlock.NOTE),
+                    blocks.add(new ScannedNoteBlock(pos.immutable(), instrument, state.getValue(NoteBlock.NOTE),
                             player.distanceToSqr(Vec3.atCenterOf(pos))));
                 }
             }
@@ -315,7 +373,7 @@ public final class NotebotModule extends Module {
 
     private void resetRuntime() {
         this.stage = Stage.PREPARE;
-        this.parsedSong = ParsedSong.EMPTY;
+        this.parsedSong = NotebotSong.EMPTY;
         this.blocksByNote.clear();
         this.targetNotes.clear();
         this.tuneHits.clear();
@@ -328,6 +386,12 @@ public final class NotebotModule extends Module {
         this.debugValue("stage", this.stage.name().toLowerCase(Locale.ROOT));
         this.debugValue("status", status);
         this.debugValue("blocks", this.targetNotes.size());
+    }
+
+    static String describeShortfall(final Map<String, Integer> shortfall) {
+        return new TreeMap<>(shortfall).entrySet().stream()
+                .map(entry -> entry.getValue() + " " + entry.getKey())
+                .collect(Collectors.joining(", "));
     }
 
     static int parseNote(final String value) {
@@ -355,11 +419,11 @@ public final class NotebotModule extends Module {
         return safeFrom <= safeTo ? safeTo - safeFrom : 25 - safeFrom + safeTo;
     }
 
-    static ParsedSong parseSong(final String text) {
+    static NotebotSong parseSong(final String text) {
         if (text == null || text.isBlank()) {
-            return ParsedSong.EMPTY;
+            return NotebotSong.EMPTY;
         }
-        Map<Integer, List<Integer>> notes = new LinkedHashMap<>();
+        Map<Integer, List<SongNote>> notes = new LinkedHashMap<>();
         int nextTick = 0;
         for (String token : text.split("[,;\\s]+")) {
             if (token.isBlank()) {
@@ -376,36 +440,15 @@ public final class NotebotModule extends Module {
                     continue;
                 }
             }
-            List<Integer> tickNotes = notes.computeIfAbsent(tick, ignored -> new ArrayList<>());
+            List<SongNote> tickNotes = notes.computeIfAbsent(tick, ignored -> new ArrayList<>());
             for (String part : noteToken.split("\\+")) {
                 if (!part.isBlank()) {
-                    tickNotes.add(parseNote(part));
+                    tickNotes.add(SongNote.any(parseNote(part)));
                 }
             }
             nextTick = tick + 1;
         }
-        notes.entrySet().removeIf(entry -> entry.getValue().isEmpty());
-        if (notes.isEmpty()) {
-            return ParsedSong.EMPTY;
-        }
-        int lastTick = notes.keySet().stream().mapToInt(Integer::intValue).max().orElse(0);
-        Map<Integer, List<Integer>> immutableNotes = new LinkedHashMap<>();
-        for (Map.Entry<Integer, List<Integer>> entry : notes.entrySet()) {
-            immutableNotes.put(entry.getKey(), List.copyOf(entry.getValue()));
-        }
-        return new ParsedSong(Map.copyOf(immutableNotes), lastTick, requirements(immutableNotes));
-    }
-
-    private static Map<Integer, Integer> requirements(final Map<Integer, List<Integer>> notesByTick) {
-        Map<Integer, Integer> requirements = new HashMap<>();
-        for (List<Integer> notes : notesByTick.values()) {
-            Map<Integer, Integer> counts = new HashMap<>();
-            for (int note : notes) {
-                counts.merge(note, 1, Integer::sum);
-            }
-            counts.forEach((note, count) -> requirements.merge(note, count, Math::max));
-        }
-        return Map.copyOf(requirements);
+        return NotebotSong.of(notes, false);
     }
 
     private static int parseNoteToken(final String value) {
@@ -454,63 +497,72 @@ public final class NotebotModule extends Module {
         PLAY
     }
 
-    record ParsedSong(Map<Integer, List<Integer>> notesByTick, int lastTick,
-                      Map<Integer, Integer> requiredBlocksByNote) {
+    record ScannedNoteBlock(BlockPos pos, NoteBlockInstrument instrument, int note, double distanceSq) {
+    }
 
-        private static final ParsedSong EMPTY = new ParsedSong(Map.of(), 0, Map.of());
+    /**
+     * Assigns nearby note blocks to the notes a song needs. Specific instruments are matched first so that
+     * instrument-agnostic notes cannot take blocks that a specific instrument needs.
+     */
+    record NoteBlockPlan(Map<String, Integer> shortfall, Map<SongNote, List<BlockPos>> blocksByNote,
+                         Map<BlockPos, Integer> targetNotes, Map<BlockPos, Integer> observedNotes,
+                         SequencedMap<BlockPos, Integer> tuneHits) {
 
-        boolean empty() {
-            return this.notesByTick.isEmpty();
+        boolean possible() {
+            return this.shortfall.isEmpty();
         }
-    }
 
-    private record ScannedNoteBlock(BlockPos pos, int note, double distanceSq) {
-    }
-
-    private record NoteBlockPlan(boolean possible, int requiredBlocks, Map<Integer, List<BlockPos>> blocksByNote,
-                                 Map<BlockPos, Integer> targetNotes, Map<BlockPos, Integer> observedNotes,
-                                 SequencedMap<BlockPos, Integer> tuneHits) {
-
-        private static NoteBlockPlan create(final ParsedSong song, final List<ScannedNoteBlock> scannedBlocks) {
-            int requiredBlocks = song.requiredBlocksByNote().values().stream().mapToInt(Integer::intValue).sum();
-            if (scannedBlocks.size() < requiredBlocks) {
-                return impossible(requiredBlocks);
-            }
-            Map<Integer, List<BlockPos>> blocksByNote = new HashMap<>();
+        static NoteBlockPlan create(final NotebotSong song, final List<ScannedNoteBlock> scannedBlocks) {
+            Map<SongNote, List<BlockPos>> blocksByNote = new HashMap<>();
             Map<BlockPos, Integer> targetNotes = new HashMap<>();
             Map<BlockPos, Integer> observedNotes = new HashMap<>();
             SequencedMap<BlockPos, Integer> tuneHits = new LinkedHashMap<>();
+            Map<String, Integer> shortfall = new HashMap<>();
             ArrayDeque<ScannedNoteBlock> availableBlocks = new ArrayDeque<>(scannedBlocks);
 
-            List<Integer> notes = song.requiredBlocksByNote().keySet().stream().sorted().toList();
-            for (int note : notes) {
-                int required = song.requiredBlocksByNote().get(note);
+            List<SongNote> notes = song.requiredBlocks().keySet().stream()
+                    .sorted(Comparator.comparing((SongNote note) -> note.instrument() == null)
+                            .thenComparing(note -> note.instrument() == null ? "" : note.instrument().getSerializedName())
+                            .thenComparingInt(SongNote::key))
+                    .toList();
+            for (SongNote note : notes) {
+                int required = song.requiredBlocks().get(note);
                 for (int index = 0; index < required; index++) {
                     ScannedNoteBlock block = removeBestBlock(availableBlocks, note);
                     if (block == null) {
-                        return impossible(requiredBlocks);
+                        shortfall.merge(instrumentName(note), required - index, Integer::sum);
+                        break;
                     }
                     blocksByNote.computeIfAbsent(note, ignored -> new ArrayList<>()).add(block.pos());
-                    targetNotes.put(block.pos(), note);
+                    targetNotes.put(block.pos(), note.key());
                     observedNotes.put(block.pos(), block.note());
-                    int clicks = tuneClicks(block.note(), note);
+                    int clicks = tuneClicks(block.note(), note.key());
                     if (clicks > 0) {
                         tuneHits.put(block.pos(), clicks);
                     }
                 }
             }
-            Map<Integer, List<BlockPos>> immutableBlocksByNote = new HashMap<>();
+            if (!shortfall.isEmpty()) {
+                return new NoteBlockPlan(Map.copyOf(shortfall), Map.of(), Map.of(), Map.of(), new LinkedHashMap<>());
+            }
+            Map<SongNote, List<BlockPos>> immutableBlocksByNote = new HashMap<>();
             blocksByNote.forEach((note, blocks) -> immutableBlocksByNote.put(note, List.copyOf(blocks)));
-            return new NoteBlockPlan(true, requiredBlocks, Map.copyOf(immutableBlocksByNote), Map.copyOf(targetNotes),
+            return new NoteBlockPlan(Map.of(), Map.copyOf(immutableBlocksByNote), Map.copyOf(targetNotes),
                     Map.copyOf(observedNotes), new LinkedHashMap<>(tuneHits));
         }
 
-        private static ScannedNoteBlock removeBestBlock(final ArrayDeque<ScannedNoteBlock> blocks,
-                                                        final int targetNote) {
+        private static String instrumentName(final SongNote note) {
+            return note.instrument() == null ? "any" : note.instrument().getSerializedName();
+        }
+
+        private static ScannedNoteBlock removeBestBlock(final ArrayDeque<ScannedNoteBlock> blocks, final SongNote note) {
             ScannedNoteBlock best = null;
             for (ScannedNoteBlock block : blocks) {
-                int blockClicks = tuneClicks(block.note(), targetNote);
-                int bestClicks = best == null ? Integer.MAX_VALUE : tuneClicks(best.note(), targetNote);
+                if (!note.accepts(block.instrument())) {
+                    continue;
+                }
+                int blockClicks = tuneClicks(block.note(), note.key());
+                int bestClicks = best == null ? Integer.MAX_VALUE : tuneClicks(best.note(), note.key());
                 if (best == null || blockClicks < bestClicks
                         || blockClicks == bestClicks && block.distanceSq() < best.distanceSq()) {
                     best = block;
@@ -520,10 +572,6 @@ public final class NotebotModule extends Module {
                 blocks.remove(best);
             }
             return best;
-        }
-
-        private static NoteBlockPlan impossible(final int requiredBlocks) {
-            return new NoteBlockPlan(false, requiredBlocks, Map.of(), Map.of(), Map.of(), new LinkedHashMap<>());
         }
     }
 }

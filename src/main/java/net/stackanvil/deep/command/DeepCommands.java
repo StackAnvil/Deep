@@ -16,6 +16,7 @@ import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import net.stackanvil.deep.Deep;
 import net.stackanvil.deep.module.Module;
 import net.stackanvil.deep.module.ModuleBindAction;
+import net.stackanvil.deep.module.impl.NotebotModule;
 import net.stackanvil.deep.module.impl.SwarmModule;
 import net.stackanvil.deep.profile.ProfileManager;
 import net.stackanvil.deep.setting.BooleanSetting;
@@ -24,6 +25,7 @@ import net.stackanvil.deep.setting.SelectSetting;
 import net.stackanvil.deep.setting.Setting;
 import net.stackanvil.deep.setting.StringSetting;
 import net.stackanvil.deep.setting.TextValueSetting;
+import net.stackanvil.deep.ui.SongBrowserScreen;
 import net.stackanvil.deep.waypoint.Waypoint;
 import net.stackanvil.deep.waypoint.WaypointStore;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
@@ -265,6 +267,14 @@ public final class DeepCommands {
                 .then(literal("notebot")
                         .then(literal("status")
                                 .executes(DeepCommands::notebotStatus))
+                        .then(literal("songs")
+                                .executes(DeepCommands::notebotSongs))
+                        .then(literal("browse")
+                                .executes(DeepCommands::notebotBrowse))
+                        .then(literal("load")
+                                .then(argument("song", StringArgumentType.greedyString())
+                                        .suggests(DeepCommands::suggestSongs)
+                                        .executes(DeepCommands::notebotLoad)))
                         .then(literal("play")
                                 .then(argument("note", IntegerArgumentType.integer(0, 24))
                                         .executes(DeepCommands::notebotPlayNote))))
@@ -1042,8 +1052,82 @@ public final class DeepCommands {
     }
 
     private static int notebotStatus(final CommandContext<FabricClientCommandSource> context) {
-        context.getSource().sendFeedback(Component.literal("Notebot scans nearby note blocks when the module is enabled. /ac notebot play <note> is a local pitch preview."));
+        context.getSource().sendFeedback(Component.literal("Notebot scans nearby note blocks when the module is enabled. Use /deep notebot browse or /deep notebot load <song> to play a song file, and /deep notebot play <note> for a local pitch preview."));
         return SUCCESS;
+    }
+
+    private static int notebotSongs(final CommandContext<FabricClientCommandSource> context) {
+        NotebotModule notebot = notebot(context);
+        if (notebot == null) {
+            return 0;
+        }
+        List<String> songs;
+        try {
+            songs = notebot.songFiles().list();
+        } catch (IOException exception) {
+            context.getSource().sendError(Component.literal("Could not list songs: " + exception.getMessage()));
+            return 0;
+        }
+        if (songs.isEmpty()) {
+            context.getSource().sendFeedback(Component.literal("No songs found. Put .nbs files in " + notebot.songFiles().directory() + "."));
+            return SUCCESS;
+        }
+        context.getSource().sendFeedback(Component.literal(songs.size() + " song" + (songs.size() == 1 ? "" : "s") + ": " + String.join(", ", songs)));
+        return SUCCESS;
+    }
+
+    private static int notebotLoad(final CommandContext<FabricClientCommandSource> context) {
+        NotebotModule notebot = notebot(context);
+        if (notebot == null) {
+            return 0;
+        }
+        String song = StringArgumentType.getString(context, "song").trim();
+        try {
+            if (!Files.isRegularFile(notebot.songFiles().resolve(song))) {
+                context.getSource().sendError(Component.literal("Song not found: " + song));
+                return 0;
+            }
+        } catch (IllegalArgumentException exception) {
+            context.getSource().sendError(Component.literal(exception.getMessage()));
+            return 0;
+        }
+        notebot.selectSong(song);
+        if (!notebot.enabled()) {
+            notebot.enabled(true);
+        }
+        context.getSource().sendFeedback(Component.literal("Notebot is playing " + song + "."));
+        return SUCCESS;
+    }
+
+    private static int notebotBrowse(final CommandContext<FabricClientCommandSource> context) {
+        NotebotModule notebot = notebot(context);
+        if (notebot == null) {
+            return 0;
+        }
+        Minecraft client = Minecraft.getInstance();
+        // Run after the chat screen closes, or it would replace the browser.
+        client.execute(() -> client.gui.setScreen(new SongBrowserScreen(null, notebot)));
+        return SUCCESS;
+    }
+
+    private static NotebotModule notebot(final CommandContext<FabricClientCommandSource> context) {
+        if (Deep.MODULES.find("notebot").orElse(null) instanceof NotebotModule notebot) {
+            return notebot;
+        }
+        context.getSource().sendError(Component.literal("Notebot module is not registered."));
+        return null;
+    }
+
+    private static CompletableFuture<Suggestions> suggestSongs(final CommandContext<FabricClientCommandSource> context,
+                                                               final SuggestionsBuilder builder) {
+        if (!(Deep.MODULES.find("notebot").orElse(null) instanceof NotebotModule notebot)) {
+            return builder.buildFuture();
+        }
+        try {
+            return SharedSuggestionProvider.suggest(notebot.songFiles().list(), builder);
+        } catch (IOException exception) {
+            return builder.buildFuture();
+        }
     }
 
     private static int notebotPlayNote(final CommandContext<FabricClientCommandSource> context) {

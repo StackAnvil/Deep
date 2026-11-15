@@ -1,4 +1,9 @@
 {
   "key.deep.open_menu": "Open Deep",
-  "menu.deep.client_menu": "Deep Menu"
+  "menu.deep.client_menu": "Deep Menu",
+  "screen.deep.song_browser": "Songs",
+  "screen.deep.song_browser.search": "Search songs",
+  "screen.deep.song_browser.empty": "No songs yet. Put .nbs files in config/deep/songs.",
+  "screen.deep.song_browser.error": "Could not read the songs folder: %s",
+  "screen.deep.song_browser.open_folder": "Open Folder"
 }
