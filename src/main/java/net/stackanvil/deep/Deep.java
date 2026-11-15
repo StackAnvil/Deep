@@ -21,6 +21,7 @@ import net.stackanvil.deep.target.RenderedEntityCache;
 import net.stackanvil.deep.timer.TimerManager;
 import net.stackanvil.deep.ui.DeepScreen;
 import net.stackanvil.deep.ui.HudLayout;
+import net.stackanvil.deep.ui.TitleScreenButtons;
 import net.stackanvil.deep.waypoint.WaypointStore;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
@@ -72,6 +73,7 @@ public final class Deep implements ClientModInitializer {
                 Category.MISC
         ));
         DeepCommands.register();
+        TitleScreenButtons.register();
 
         ClientTickEvents.END_CLIENT_TICK.register(this::onClientTick);
         LevelRenderEvents.COLLECT_SUBMITS.register(context -> {
