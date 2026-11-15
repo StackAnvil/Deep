@@ -12,6 +12,10 @@ Fabric `26.3` utility client by StackAnvil.
 
 - Rivet-based in-game GUI with Vulkan and OpenGL support through Blaze3D.
 - Combat, movement, world, render, and HUD modules inherited from AnarchyClient.
+- Title screen buttons for the Deep menu and the account manager.
+- Account manager for Microsoft and offline accounts. Microsoft sessions are encrypted with a password you choose, so the files alone cannot be used to log in.
+- Notebot that plays `.nbs`, MIDI, and other song files from `config/deep/songs`. It matches notes to note blocks with the right instrument and has a song browser (`/deep notebot browse`).
+- Automatic config backups in `config/deep/backups` on every start. The newest 50 are kept.
 
 ## How to use
 
