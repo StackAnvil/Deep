@@ -2,11 +2,11 @@ package net.stackanvil.deep.notebot;
 
 import net.minecraft.world.level.block.state.properties.NoteBlockInstrument;
 import net.raphimc.noteblocklib.NoteBlockLib;
-import net.raphimc.noteblocklib.data.MinecraftInstrument;
+import net.raphimc.noteblocklib.format.minecraft.MinecraftInstrument;
 import net.raphimc.noteblocklib.format.SongFormat;
 import net.raphimc.noteblocklib.format.nbs.model.NbsCustomInstrument;
 import net.raphimc.noteblocklib.format.nbs.model.NbsSong;
-import net.raphimc.noteblocklib.model.Note;
+import net.raphimc.noteblocklib.model.note.Note;
 import net.stackanvil.deep.test.MinecraftBootstrapExtension;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

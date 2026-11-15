@@ -3,10 +3,10 @@ package net.stackanvil.deep.notebot;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.world.level.block.state.properties.NoteBlockInstrument;
 import net.raphimc.noteblocklib.NoteBlockLib;
-import net.raphimc.noteblocklib.data.MinecraftDefinitions;
-import net.raphimc.noteblocklib.data.MinecraftInstrument;
-import net.raphimc.noteblocklib.model.Note;
-import net.raphimc.noteblocklib.model.Song;
+import net.raphimc.noteblocklib.format.minecraft.MinecraftDefinitions;
+import net.raphimc.noteblocklib.format.minecraft.MinecraftInstrument;
+import net.raphimc.noteblocklib.model.note.Note;
+import net.raphimc.noteblocklib.model.song.Song;
 import net.raphimc.noteblocklib.util.SongResampler;
 import net.stackanvil.deep.Deep;
 
@@ -114,6 +114,10 @@ public final class SongFiles {
             case BIT -> NoteBlockInstrument.BIT;
             case BANJO -> NoteBlockInstrument.BANJO;
             case PLING -> NoteBlockInstrument.PLING;
+            case TRUMPET -> NoteBlockInstrument.TRUMPET;
+            case TRUMPET_EXPOSED -> NoteBlockInstrument.TRUMPET_EXPOSED;
+            case TRUMPET_OXIDIZED -> NoteBlockInstrument.TRUMPET_OXIDIZED;
+            case TRUMPET_WEATHERED -> NoteBlockInstrument.TRUMPET_WEATHERED;
         };
     }
 

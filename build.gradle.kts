@@ -13,7 +13,7 @@ val immutablesVersion = "2.12.3"
 val commonsVersion = "1.9.2"
 val lambdaEventsVersion = "2.4.2"
 val reflectVersion = "1.6.4"
-val noteBlockLibVersion = "3.1.0"
+val noteBlockLibVersion = "3.4.0"
 val asmVersion = "9.10.1"
 val javaVersion = 25
 
@@ -39,11 +39,7 @@ dependencies {
     implementation(include("net.lenni0451.commons:animation:$commonsVersion") as Any)
     implementation(include("net.lenni0451:LambdaEvents:$lambdaEventsVersion") as Any)
     implementation(include("net.lenni0451:Reflect:$reflectVersion") as Any)
-    // Minecraft already ships a newer Guava.
-    implementation("net.raphimc:NoteBlockLib:$noteBlockLibVersion") {
-        exclude(group = "com.google.guava", module = "guava")
-    }
-    include("net.raphimc:NoteBlockLib:$noteBlockLibVersion")
+    implementation(include("net.raphimc:NoteBlockLib:$noteBlockLibVersion") as Any)
 
     annotationProcessor("org.immutables:gson:$immutablesVersion")
     compileOnly("org.immutables:value:${immutablesVersion}")
