@@ -1,0 +1,34 @@
+package net.stackanvil.deep.module.impl;
+
+import net.stackanvil.deep.module.Module;
+import net.stackanvil.deep.module.ModuleCategory;
+import net.stackanvil.deep.setting.NumberSetting;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.player.ClientInput;
+import net.minecraft.client.player.LocalPlayer;
+
+public final class EagleModule extends Module {
+
+    private final NumberSetting lookAhead = this.setting(NumberSetting.from(NumberSetting.builder()
+            .id("look_ahead")
+            .name("Look Ahead")
+            .defaultValue(0.35)
+            .min(0.15)
+            .max(0.9)
+            .step(0.05)
+            .build()));
+
+    public EagleModule() {
+        super("eagle", "Eagle", ModuleCategory.MOVEMENT);
+    }
+
+    @Override
+    public void updateInput(final Minecraft client, final ClientInput input) {
+        LocalPlayer player = client.player;
+        if (player == null || player.input != input || client.gui.screen() != null) {
+            return;
+        }
+        boolean shouldSneak = player.onGround() && MovementChecks.movingTowardAir(player, input, this.lookAhead.value());
+        input.keyPresses = InputStates.withShift(input.keyPresses, input.keyPresses.shift() || shouldSneak);
+    }
+}

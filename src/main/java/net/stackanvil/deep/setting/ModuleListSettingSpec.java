@@ -1,0 +1,25 @@
+package net.stackanvil.deep.setting;
+
+import org.immutables.value.Value;
+
+import java.util.List;
+
+@SettingStyle
+@Value.Immutable
+public interface ModuleListSettingSpec {
+
+    String id();
+
+    String name();
+
+    @Value.Default
+    default String description() {
+        return "";
+    }
+
+    List<String> defaultValue();
+
+    List<String> aliases();
+
+    List<String> suggestions();
+}

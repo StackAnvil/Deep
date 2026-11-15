@@ -1,0 +1,11 @@
+{
+  "providers": [
+    {
+      "type": "ttf",
+      "file": "deep:lucide.ttf",
+      "size": 14,
+      "oversample": 4,
+      "shift": [0, 0]
+    }
+  ]
+}

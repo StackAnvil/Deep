@@ -1,0 +1,90 @@
+package net.stackanvil.deep.module.impl;
+
+import net.stackanvil.deep.module.Module;
+import net.stackanvil.deep.module.ModuleCategory;
+import net.stackanvil.deep.setting.BooleanSetting;
+import net.stackanvil.deep.ui.HudEditorScreen;
+import net.stackanvil.deep.ui.HudLayout;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.multiplayer.PlayerInfo;
+
+import java.util.List;
+
+public final class CoordinatesHudModule extends Module {
+
+    private final BooleanSetting showFps = this.setting(BooleanSetting.from(BooleanSetting.builder()
+            .id("show_fps")
+            .name("FPS")
+            .defaultValue(true)
+            .build()));
+    private final BooleanSetting showPing = this.setting(BooleanSetting.from(BooleanSetting.builder()
+            .id("show_ping")
+            .name("Ping")
+            .defaultValue(true)
+            .build()));
+    private final BooleanSetting showLinkedCoords = this.setting(BooleanSetting.from(BooleanSetting.builder()
+            .id("show_linked_coords")
+            .name("Linked XYZ")
+            .defaultValue(true)
+            .build()));
+    private final BooleanSetting showSpeed = this.setting(BooleanSetting.from(BooleanSetting.builder()
+            .id("show_speed")
+            .name("Speed")
+            .defaultValue(true)
+            .build()));
+    private final BooleanSetting showFacing = this.setting(BooleanSetting.from(BooleanSetting.builder()
+            .id("show_facing")
+            .name("Facing")
+            .defaultValue(true)
+            .build()));
+
+    public CoordinatesHudModule() {
+        super("coordinates_hud", "Coordinates HUD", ModuleCategory.HUD);
+    }
+
+    @Override
+    public void renderHud(final Minecraft client, final GuiGraphicsExtractor graphics) {
+        if (client.player == null || HudEditorScreen.suppressed(client)) {
+            return;
+        }
+        List<String> lines = this.lines(client);
+        if (lines.isEmpty()) {
+            return;
+        }
+        int[] size = HudText.size(client, lines);
+        int[] origin = HudLayout.origin(this.id(), this.name(), size[0], size[1], "Top Left", graphics);
+        HudText.panelAt(client, graphics, lines, origin[0], origin[1], HudText.textColor(), true);
+    }
+
+    List<String> lines(final Minecraft client) {
+        List<String> lines = new java.util.ArrayList<>();
+        if (client.player == null) {
+            return lines;
+        }
+        lines.add(String.format("XYZ %.1f %.1f %.1f", client.player.getX(), client.player.getY(), client.player.getZ()));
+        if (this.showLinkedCoords.value()) {
+            double scale = client.player.level().dimension() == net.minecraft.world.level.Level.NETHER ? 8.0 : 0.125;
+            String label = client.player.level().dimension() == net.minecraft.world.level.Level.NETHER ? "OW" : "Nether";
+            lines.add(String.format("%s %.1f %.1f", label, client.player.getX() * scale, client.player.getZ() * scale));
+        }
+        lines.add(client.player.level().dimension().identifier().toString());
+        if (this.showFacing.value()) {
+            lines.add("Facing " + client.player.getDirection().getName());
+        }
+        if (this.showSpeed.value()) {
+            double speed = client.player.getDeltaMovement().horizontalDistance() * 20.0;
+            lines.add(String.format("%.2f b/s", speed));
+        }
+        if (this.showFps.value()) {
+            lines.add(client.getFps() + " FPS");
+        }
+        if (this.showPing.value() && client.getConnection() != null) {
+            PlayerInfo info = client.getConnection().getPlayerInfo(client.player.getUUID());
+            if (info != null) {
+                lines.add(info.getLatency() + " ms");
+            }
+        }
+        return lines;
+    }
+}

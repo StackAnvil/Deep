@@ -1,0 +1,102 @@
+package net.stackanvil.deep.module.impl;
+
+import net.stackanvil.deep.module.Module;
+import net.stackanvil.deep.module.ModuleCategory;
+import net.stackanvil.deep.module.ModuleManager;
+import net.stackanvil.deep.server.ServerObserver;
+import net.stackanvil.deep.setting.BooleanSetting;
+import net.stackanvil.deep.setting.StringSetting;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientPacketListener;
+import net.minecraft.client.player.LocalPlayer;
+
+import java.util.LinkedHashSet;
+import java.util.Locale;
+import java.util.Set;
+
+public final class AutoDisableModule extends Module {
+
+    private final ModuleManager modules;
+    private final StringSetting moduleList = this.setting(StringSetting.from(StringSetting.builder()
+            .id("modules")
+            .name("Modules")
+            .defaultValue("kill_aura, auto_clicker, velocity, fly, glide, boost")
+            .build()));
+    private final BooleanSetting onDeath = this.setting(BooleanSetting.from(BooleanSetting.builder()
+            .id("on_death")
+            .name("Death")
+            .defaultValue(true)
+            .build()));
+    private final BooleanSetting onDisconnect = this.setting(BooleanSetting.from(BooleanSetting.builder()
+            .id("on_disconnect")
+            .name("Disconnect")
+            .defaultValue(true)
+            .build()));
+    private final BooleanSetting onFlag = this.setting(BooleanSetting.from(BooleanSetting.builder()
+            .id("on_flag")
+            .name("Flag")
+            .defaultValue(true)
+            .build()));
+    private boolean wasDead;
+    private int observedFlagSequence;
+
+    public AutoDisableModule(final ModuleManager modules) {
+        super("auto_disable", "Auto Disable", ModuleCategory.MISC);
+        this.modules = modules;
+    }
+
+    @Override
+    public void tick(final Minecraft client) {
+        LocalPlayer player = client.player;
+        if (player == null) {
+            this.wasDead = false;
+            return;
+        }
+        boolean dead = player.isDeadOrDying();
+        if (dead && !this.wasDead && this.onDeath.value()) {
+            this.disableConfigured();
+        }
+        this.wasDead = dead;
+        int flagSequence = ServerObserver.flagSequence();
+        if (this.onFlag.value() && flagSequence != this.observedFlagSequence) {
+            this.observedFlagSequence = flagSequence;
+            this.disableConfigured();
+        }
+    }
+
+    @Override
+    public void gameLeft(final Minecraft client, final ClientPacketListener listener) {
+        this.wasDead = false;
+        if (this.onDisconnect.value()) {
+            this.disableConfigured();
+        }
+    }
+
+    @Override
+    protected void onEnable() {
+        this.observedFlagSequence = ServerObserver.flagSequence();
+    }
+
+    private void disableConfigured() {
+        for (String id : parseModuleIds(this.moduleList.value())) {
+            if (id.equals(this.id())) {
+                continue;
+            }
+            this.modules.find(id).ifPresent(module -> module.enabled(false));
+        }
+    }
+
+    static Set<String> parseModuleIds(final String value) {
+        Set<String> ids = new LinkedHashSet<>();
+        if (value == null || value.isBlank()) {
+            return ids;
+        }
+        for (String token : value.split("[,;|\\s]+")) {
+            String id = token.trim().toLowerCase(Locale.ROOT);
+            if (!id.isEmpty()) {
+                ids.add(id);
+            }
+        }
+        return ids;
+    }
+}

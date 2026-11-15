@@ -1,0 +1,39 @@
+{
+  "required": true,
+  "package": "net.stackanvil.deep.mixin",
+  "compatibilityLevel": "JAVA_25",
+  "client": [
+    "AddressCheckMixin",
+    "CameraMixin",
+    "ChatComponentMixin",
+    "ChatScreenMixin",
+    "ClientCommonPacketListenerMixin",
+    "ClientInputAccessor",
+    "ClientLevelMixin",
+    "ClientPacketListenerMixin",
+    "CommandSuggestionsMixin",
+    "ConnectionMixin",
+    "DeltaTrackerTimerMixin",
+    "EditBoxMixin",
+    "EntityMixin",
+    "EntityRendererMixin",
+    "GameRendererMixin",
+    "GuiMixin",
+    "ItemEntityRendererMixin",
+    "ItemInHandRendererMixin",
+    "ItemStackMixin",
+    "KeyboardInputMixin",
+    "LivingEntityAccessor",
+    "LocalPlayerMixin",
+    "LocalPlayerPortalMixin",
+    "MinecraftAccessor",
+    "MinecraftActionsMixin",
+    "MouseHandlerMixin",
+    "MultiPlayerGameModeMixin",
+    "PlayerMixin",
+    "PlayerTabOverlayMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

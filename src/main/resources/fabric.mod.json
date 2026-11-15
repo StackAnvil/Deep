@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "id": "deep",
+  "version": "${version}",
+  "name": "Deep",
+  "description": "Fabric utility client by StackAnvil.",
+  "authors": [
+    "StackAnvil"
+  ],
+  "contact": {
+    "issues": "https://github.com/StackAnvil/Deep/issues",
+    "sources": "https://github.com/StackAnvil/Deep"
+  },
+  "license": "MIT",
+  "icon": "assets/deep/icon.png",
+  "environment": "client",
+  "entrypoints": {
+    "client": [
+      "net.stackanvil.deep.Deep"
+    ]
+  },
+  "accessWidener": "deep.accesswidener",
+  "mixins": [
+    "deep.mixins.json"
+  ],
+  "depends": {
+    "fabric-api": "*",
+    "fabricloader": ">=0.19.3",
+    "minecraft": "26.2",
+    "java": ">=25"
+  }
+}
