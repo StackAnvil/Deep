@@ -1,5 +1,7 @@
 package net.stackanvil.deep;
 
+import net.stackanvil.deep.account.AccountManager;
+import net.stackanvil.deep.account.AccountStore;
 import net.stackanvil.deep.command.DeepCommands;
 import net.stackanvil.deep.config.ClientConfig;
 import net.stackanvil.deep.config.ConfigBackups;
@@ -52,6 +54,7 @@ public final class Deep implements ClientModInitializer {
     public static final ProfileManager PROFILES = new ProfileManager(ProfileManager.defaultPath());
     public static final WaypointStore WAYPOINTS = new WaypointStore(WaypointStore.defaultPath());
     public static final ClientConfig CONFIG = new ClientConfig(MODULES, FRIENDS);
+    public static final AccountManager ACCOUNTS = new AccountManager(AccountStore.defaults());
     private static final Identifier HUD_MODULES_ID = Identifier.fromNamespaceAndPath(MOD_ID, "module_hud");
 
     private KeyMapping openMenuKey;
@@ -66,6 +69,7 @@ public final class Deep implements ClientModInitializer {
         WAYPOINTS.load();
         CONFIG.load();
         HudLayout.load();
+        loadAccounts();
 
         this.openMenuKey = KeyMappingHelper.registerKeyMapping(new KeyMapping(
                 "key.deep.open_menu",
@@ -86,6 +90,14 @@ public final class Deep implements ClientModInitializer {
                     MODULES.call(new HudRenderEvent(Minecraft.getInstance(), graphics));
                     ToggleNotifications.render(Minecraft.getInstance(), graphics);
                 });
+    }
+
+    private static void loadAccounts() {
+        try {
+            ACCOUNTS.store().load();
+        } catch (IOException | RuntimeException exception) {
+            LOGGER.warn("Failed to load Deep accounts", exception);
+        }
     }
 
     private static void backupConfig() {

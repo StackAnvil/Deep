@@ -14,6 +14,7 @@ val commonsVersion = "1.9.2"
 val lambdaEventsVersion = "2.4.2"
 val reflectVersion = "1.6.4"
 val noteBlockLibVersion = "3.4.0"
+val minecraftAuthVersion = "5.0.2"
 val asmVersion = "9.10.1"
 val javaVersion = 25
 
@@ -40,6 +41,9 @@ dependencies {
     implementation(include("net.lenni0451:LambdaEvents:$lambdaEventsVersion") as Any)
     implementation(include("net.lenni0451:Reflect:$reflectVersion") as Any)
     implementation(include("net.raphimc:NoteBlockLib:$noteBlockLibVersion") as Any)
+    implementation(include("net.raphimc:MinecraftAuth:$minecraftAuthVersion") as Any)
+    include("net.lenni0451.commons:httpclient:$commonsVersion")
+    include("net.lenni0451.commons:gson:$commonsVersion")
 
     annotationProcessor("org.immutables:gson:$immutablesVersion")
     compileOnly("org.immutables:value:${immutablesVersion}")

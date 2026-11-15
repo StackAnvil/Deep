@@ -15,7 +15,8 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * Puts Realms and Multiplayer side by side on the title screen and adds a full-width Deep menu button in the freed row.
+ * Puts Realms and Multiplayer side by side on the title screen and uses the freed row for the Deep menu and account
+ * manager buttons.
  */
 public final class TitleScreenButtons {
 
@@ -46,22 +47,30 @@ public final class TitleScreenButtons {
         place(realms.get(), layout.realms());
         place(multiplayer.get(), layout.multiplayer());
         Rect menu = layout.menu();
+        Rect accounts = layout.accounts();
         widgets.add(Button.builder(Component.translatable("menu.deep.client_menu"),
                         button -> client.gui.setScreen(new DeepScreen(Deep.MODULES, Deep.CONFIG)))
                 .bounds(menu.x(), menu.y(), menu.width(), menu.height())
                 .build());
+        widgets.add(Button.builder(Component.translatable("menu.deep.accounts"),
+                        button -> client.gui.setScreen(new AccountsScreen(screen, Deep.ACCOUNTS)))
+                .bounds(accounts.x(), accounts.y(), accounts.width(), accounts.height())
+                .build());
     }
 
     /**
-     * Splits the multiplayer row between Realms (left) and Multiplayer (right) and gives the Realms row to the menu button.
+     * Splits the multiplayer row between Realms (left) and Multiplayer (right). The Realms row holds the Deep menu (left)
+     * and the account manager (right).
      */
     static Layout layout(final Rect multiplayer, final Rect realms) {
         int leftWidth = (multiplayer.width() - GAP) / 2;
         int rightWidth = multiplayer.width() - GAP - leftWidth;
+        int rightX = multiplayer.x() + leftWidth + GAP;
         return new Layout(
                 new Rect(multiplayer.x(), multiplayer.y(), leftWidth, multiplayer.height()),
-                new Rect(multiplayer.x() + leftWidth + GAP, multiplayer.y(), rightWidth, multiplayer.height()),
-                new Rect(multiplayer.x(), realms.y(), multiplayer.width(), realms.height())
+                new Rect(rightX, multiplayer.y(), rightWidth, multiplayer.height()),
+                new Rect(multiplayer.x(), realms.y(), leftWidth, realms.height()),
+                new Rect(rightX, realms.y(), rightWidth, realms.height())
         );
     }
 
@@ -81,6 +90,6 @@ public final class TitleScreenButtons {
     record Rect(int x, int y, int width, int height) {
     }
 
-    record Layout(Rect realms, Rect multiplayer, Rect menu) {
+    record Layout(Rect realms, Rect multiplayer, Rect menu, Rect accounts) {
     }
 }

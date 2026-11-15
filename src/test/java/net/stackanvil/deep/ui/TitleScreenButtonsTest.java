@@ -9,12 +9,13 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 class TitleScreenButtonsTest {
 
     @Test
-    void layoutSplitsMultiplayerRowAndGivesRealmsRowToMenu() {
+    void layoutSplitsMultiplayerRowAndGivesRealmsRowToMenuAndAccounts() {
         Layout layout = TitleScreenButtons.layout(new Rect(220, 154, 200, 20), new Rect(220, 178, 200, 20));
 
         assertEquals(new Rect(220, 154, 98, 20), layout.realms());
         assertEquals(new Rect(322, 154, 98, 20), layout.multiplayer());
-        assertEquals(new Rect(220, 178, 200, 20), layout.menu());
+        assertEquals(new Rect(220, 178, 98, 20), layout.menu());
+        assertEquals(new Rect(322, 178, 98, 20), layout.accounts());
     }
 
     @Test
