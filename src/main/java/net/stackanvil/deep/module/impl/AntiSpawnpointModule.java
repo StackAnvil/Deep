@@ -4,6 +4,7 @@ import net.stackanvil.deep.module.Module;
 import net.stackanvil.deep.module.ModuleCategory;
 import net.stackanvil.deep.setting.BooleanSetting;
 import net.minecraft.client.Minecraft;
+import net.minecraft.world.item.component.SwingAnimation;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.Connection;
 import net.minecraft.network.protocol.Packet;
@@ -32,14 +33,14 @@ public final class AntiSpawnpointModule extends Module {
         if (!(packet instanceof ServerboundUseItemOnPacket useItemOn) || client.level == null || client.player == null) {
             return false;
         }
-        BlockPos pos = useItemOn.getHitResult().getBlockPos();
+        BlockPos pos = useItemOn.hitResult().getBlockPos();
         BlockState state = client.level.getBlockState(pos);
         if (!shouldCancelUse(client.level.dimension(), state.getBlock())) {
             return false;
         }
         if (this.fakeSwing.value()) {
-            InteractionHand hand = useItemOn.getHand();
-            client.player.swing(hand);
+            InteractionHand hand = useItemOn.hand();
+            client.player.swing(hand, SwingAnimation.DEFAULT, false);
         }
         return true;
     }

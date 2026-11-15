@@ -6,6 +6,7 @@ import net.stackanvil.deep.setting.NumberSetting;
 import net.stackanvil.deep.target.TargetPolicy;
 import net.stackanvil.deep.target.TargetQuery;
 import net.minecraft.client.Minecraft;
+import net.minecraft.world.item.component.SwingAnimation;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.Items;
@@ -49,7 +50,7 @@ public final class MaceKillModule extends Module {
                 this.range.value(), Comparator.comparingDouble(player::distanceToSqr))
                 .ifPresent(target -> {
                     client.gameMode.attack(player, target);
-                    player.swing(InteractionHand.MAIN_HAND);
+                    player.swing(InteractionHand.MAIN_HAND, SwingAnimation.DEFAULT, false);
                 });
     }
 }

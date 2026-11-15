@@ -4,6 +4,7 @@ import net.stackanvil.deep.module.Module;
 import net.stackanvil.deep.module.ModuleCategory;
 import net.stackanvil.deep.setting.NumberSetting;
 import net.minecraft.client.Minecraft;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.inventory.BrewingStandMenu;
@@ -40,7 +41,7 @@ public final class AutoBrewerModule extends Module {
             return;
         }
         if (quickMoveFinishedPotions(client, menu)
-                || quickMoveMatching(client, menu, stack -> stack.is(ItemTags.BREWING_FUEL))
+                || quickMoveMatching(client, menu, stack -> stack.has(DataComponents.BREWING_FUEL))
                 || quickMoveMatching(client, menu, stack -> stack.is(Items.NETHER_WART))
                 || quickMoveMatching(client, menu, stack -> stack.is(Items.POTION) || stack.is(Items.GLASS_BOTTLE))) {
             this.cooldownTicks = this.delay.value().intValue();

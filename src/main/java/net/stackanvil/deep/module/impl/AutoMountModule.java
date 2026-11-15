@@ -4,6 +4,7 @@ import net.stackanvil.deep.module.Module;
 import net.stackanvil.deep.module.ModuleCategory;
 import net.stackanvil.deep.setting.NumberSetting;
 import net.minecraft.client.Minecraft;
+import net.minecraft.world.item.component.SwingAnimation;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -57,7 +58,7 @@ public final class AutoMountModule extends Module {
         }
         InteractionResult result = client.gameMode.interact(player, target, new EntityHitResult(target), InteractionHand.MAIN_HAND);
         if (result.consumesAction()) {
-            player.swing(InteractionHand.MAIN_HAND);
+            player.swing(InteractionHand.MAIN_HAND, SwingAnimation.DEFAULT, false);
         }
         this.cooldownTicks = this.delay.value().intValue();
     }

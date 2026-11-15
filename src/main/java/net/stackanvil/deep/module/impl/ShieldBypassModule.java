@@ -6,15 +6,16 @@ import net.stackanvil.deep.module.ModuleCategory;
 import net.stackanvil.deep.setting.BooleanSetting;
 import net.stackanvil.deep.setting.NumberSetting;
 import net.minecraft.client.Minecraft;
+import net.minecraft.world.item.component.SwingAnimation;
 import net.minecraft.client.input.MouseButtonInfo;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.protocol.game.ServerboundMovePlayerPacket;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.item.AxeItem;
+import net.minecraft.tags.ItemTags;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.Vec3;
-import org.lwjgl.glfw.GLFW;
+import com.mojang.blaze3d.platform.InputConstants;
 
 public final class ShieldBypassModule extends Module {
 
@@ -44,7 +45,7 @@ public final class ShieldBypassModule extends Module {
 
     @Override
     public boolean mouseClick(final Minecraft client, final MouseButtonInfo buttonInfo, final int action) {
-        if (buttonInfo.button() != GLFW.GLFW_MOUSE_BUTTON_LEFT || action != GLFW.GLFW_PRESS) {
+        if (buttonInfo.button() != InputConstants.MOUSE_BUTTON_LEFT || action != InputConstants.PRESS) {
             return false;
         }
         LocalPlayer player = client.player;
@@ -55,7 +56,7 @@ public final class ShieldBypassModule extends Module {
         if (this.pauseForKillAura.value() && Deep.MODULES.find("kill_aura").map(Module::enabled).orElse(false)) {
             return false;
         }
-        if (this.ignoreAxes.value() && player.getMainHandItem().getItem() instanceof AxeItem) {
+        if (this.ignoreAxes.value() && player.getMainHandItem().is(ItemTags.AXES)) {
             return false;
         }
         if (!(client.hitResult instanceof EntityHitResult hit) || !(hit.getEntity() instanceof LivingEntity target)
@@ -69,7 +70,7 @@ public final class ShieldBypassModule extends Module {
         }
         client.getConnection().send(new ServerboundMovePlayerPacket.Pos(bypass, player.onGround(), player.horizontalCollision));
         client.gameMode.attack(player, target);
-        player.swing(InteractionHand.MAIN_HAND);
+        player.swing(InteractionHand.MAIN_HAND, SwingAnimation.DEFAULT, false);
         player.resetAttackStrengthTicker();
         client.getConnection().send(new ServerboundMovePlayerPacket.Pos(original, player.onGround(), player.horizontalCollision));
         return true;

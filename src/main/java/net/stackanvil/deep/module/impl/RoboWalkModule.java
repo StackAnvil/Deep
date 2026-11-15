@@ -4,6 +4,7 @@ import net.stackanvil.deep.module.Module;
 import net.stackanvil.deep.module.ModuleCategory;
 import net.stackanvil.deep.setting.NumberSetting;
 import net.minecraft.client.Minecraft;
+import net.minecraft.core.PositionAndRotation;
 import net.minecraft.network.Connection;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ServerboundMovePlayerPacket;
@@ -45,11 +46,11 @@ public final class RoboWalkModule extends Module {
             return new ServerboundMovePlayerPacket.Pos(x, y, z, move.isOnGround(), move.horizontalCollision());
         }
         if (packet instanceof ServerboundMoveVehiclePacket vehicle) {
-            Vec3 pos = vehicle.position();
+            PositionAndRotation movingTo = vehicle.movingTo();
+            Vec3 pos = movingTo.position();
             return new ServerboundMoveVehiclePacket(
-                    new Vec3(snap(pos.x, gridValue), pos.y, snap(pos.z, gridValue)),
-                    vehicle.yRot(),
-                    vehicle.xRot(),
+                    PositionAndRotation.of(new Vec3(snap(pos.x, gridValue), pos.y, snap(pos.z, gridValue)),
+                            movingTo.yRot(), movingTo.xRot()),
                     vehicle.onGround()
             );
         }

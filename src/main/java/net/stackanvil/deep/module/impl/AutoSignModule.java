@@ -8,8 +8,11 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.protocol.game.ServerboundSignUpdatePacket;
 import net.minecraft.world.level.block.SignBlock;
+import net.minecraft.world.level.block.entity.SignTextSlot;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
+
+import java.util.List;
 
 public final class AutoSignModule extends Module {
 
@@ -40,11 +43,13 @@ public final class AutoSignModule extends Module {
         }
         client.getConnection().send(new ServerboundSignUpdatePacket(
                 hit.getBlockPos(),
-                this.front.value(),
-                trim(this.line1.value()),
-                trim(this.line2.value()),
-                trim(this.line3.value()),
-                trim(this.line4.value())
+                List.of(
+                        trim(this.line1.value()),
+                        trim(this.line2.value()),
+                        trim(this.line3.value()),
+                        trim(this.line4.value())
+                ),
+                this.front.value() ? SignTextSlot.FRONT : SignTextSlot.BACK
         ));
         this.lastUpdated = hit.getBlockPos().immutable();
     }

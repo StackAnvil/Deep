@@ -3,7 +3,7 @@
 [![Build](https://github.com/StackAnvil/Deep/actions/workflows/ci.yml/badge.svg)](https://github.com/StackAnvil/Deep/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-Fabric `26.2` utility client by StackAnvil.
+Fabric `26.3` utility client by StackAnvil.
 
 > [!NOTE]
 > Deep is built on [AnarchyClient](https://github.com/6b6t/AnarchyClient) (MIT). It is not affiliated with RK_01's or Lenni0451's private client of the same name and uses none of its code.

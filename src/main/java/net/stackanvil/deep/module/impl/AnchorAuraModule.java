@@ -8,6 +8,7 @@ import net.stackanvil.deep.render.MarkerStyle;
 import net.stackanvil.deep.setting.BooleanSetting;
 import net.stackanvil.deep.setting.NumberSetting;
 import net.minecraft.client.Minecraft;
+import net.minecraft.world.item.component.SwingAnimation;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.entity.player.Player;
@@ -108,7 +109,7 @@ public final class AnchorAuraModule extends Module {
             if (canExplode && charges > 0) {
                 client.gameMode.useItemOn(client.player, net.minecraft.world.InteractionHand.MAIN_HAND,
                         new BlockHitResult(Vec3.atCenterOf(anchor.pos()), Direction.UP, anchor.pos(), false));
-                client.player.swing(net.minecraft.world.InteractionHand.MAIN_HAND);
+                client.player.swing(net.minecraft.world.InteractionHand.MAIN_HAND, SwingAnimation.DEFAULT, false);
                 this.mark(anchor.pos());
                 this.cooldown = this.delay.value().intValue();
                 this.debugValue("damage", String.format("%.1f/%.1f", anchor.targetDamage(), anchor.selfDamage()));

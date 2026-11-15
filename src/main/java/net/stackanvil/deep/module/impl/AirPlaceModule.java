@@ -8,6 +8,7 @@ import net.stackanvil.deep.setting.NumberSetting;
 import net.stackanvil.deep.setting.SelectSetting;
 import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderContext;
 import net.minecraft.client.Minecraft;
+import net.minecraft.world.item.component.SwingAnimation;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.core.BlockPos;
@@ -102,7 +103,7 @@ public final class AirPlaceModule extends Module {
         Vec3 hit = Vec3.atCenterOf(target);
         InteractionResult result = client.gameMode.useItemOn(player, hand, new BlockHitResult(hit, face, target, false));
         if (result.consumesAction()) {
-            player.swing(hand);
+            player.swing(hand, SwingAnimation.DEFAULT, false);
             return true;
         }
         return false;

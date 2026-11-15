@@ -8,10 +8,11 @@ import net.stackanvil.deep.render.MarkerStyle;
 import net.stackanvil.deep.setting.BooleanSetting;
 import net.stackanvil.deep.setting.NumberSetting;
 import net.minecraft.client.Minecraft;
+import net.minecraft.world.item.component.SwingAnimation;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.BedItem;
+import net.minecraft.tags.ItemTags;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BedBlock;
 import net.minecraft.world.phys.BlockHitResult;
@@ -98,7 +99,7 @@ public final class BedAuraModule extends Module {
         if (bed != null) {
             client.gameMode.useItemOn(client.player, net.minecraft.world.InteractionHand.MAIN_HAND,
                     new BlockHitResult(Vec3.atCenterOf(bed.pos()), Direction.UP, bed.pos(), false));
-            client.player.swing(net.minecraft.world.InteractionHand.MAIN_HAND);
+            client.player.swing(net.minecraft.world.InteractionHand.MAIN_HAND, SwingAnimation.DEFAULT, false);
             this.cooldown = this.delay.value().intValue();
             this.mark(bed.pos());
             this.debugValue("damage", String.format("%.1f/%.1f", bed.targetDamage(), bed.selfDamage()));
@@ -111,7 +112,7 @@ public final class BedAuraModule extends Module {
                 this.maxSelfDamage.value(), minDamage);
         if (placement != null) {
             WorldInteraction.ActionResult result = WorldInteraction.useOnBlock(client, this, placement.pos().below(), Direction.UP,
-                    stack -> stack.getItem() instanceof BedItem, true);
+                    stack -> stack.is(ItemTags.BEDS), true);
             if (result == WorldInteraction.ActionResult.DONE) {
                 this.cooldown = this.delay.value().intValue();
                 this.mark(placement.pos());

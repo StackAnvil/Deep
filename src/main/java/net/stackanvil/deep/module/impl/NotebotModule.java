@@ -11,6 +11,7 @@ import net.stackanvil.deep.setting.NumberSetting;
 import net.stackanvil.deep.setting.StringListSetting;
 import net.stackanvil.deep.setting.StringSetting;
 import net.minecraft.client.Minecraft;
+import net.minecraft.world.item.component.SwingAnimation;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -202,7 +203,7 @@ public final class NotebotModule extends Module {
             return;
         }
         if (this.swing.value()) {
-            player.swing(InteractionHand.MAIN_HAND);
+            player.swing(InteractionHand.MAIN_HAND, SwingAnimation.DEFAULT, false);
         }
         int current = this.currentNote(client, pos);
         this.observedNotes.put(pos, (current + 1) % 25);
@@ -244,7 +245,7 @@ public final class NotebotModule extends Module {
             usedBlocks.add(pos);
         }
         if (!usedBlocks.isEmpty() && this.swing.value()) {
-            player.swing(InteractionHand.MAIN_HAND);
+            player.swing(InteractionHand.MAIN_HAND, SwingAnimation.DEFAULT, false);
         }
         this.debugValue("stage", "playing");
         this.debugValue("tick", this.songTick + "/" + this.parsedSong.lastTick());

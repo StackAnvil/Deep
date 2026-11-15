@@ -34,7 +34,7 @@ import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.KeyMapping.Category;
 import net.minecraft.resources.Identifier;
-import org.lwjgl.glfw.GLFW;
+import org.lwjgl.sdl.SDLScancode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -69,7 +69,7 @@ public final class Deep implements ClientModInitializer {
 
         this.openMenuKey = KeyMappingHelper.registerKeyMapping(new KeyMapping(
                 "key.deep.open_menu",
-                GLFW.GLFW_KEY_RIGHT_SHIFT,
+                SDLScancode.SDL_SCANCODE_RSHIFT,
                 Category.MISC
         ));
         DeepCommands.register();

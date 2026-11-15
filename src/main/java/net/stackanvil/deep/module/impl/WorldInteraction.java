@@ -6,6 +6,7 @@ import net.stackanvil.deep.rotation.RotationManager;
 import net.stackanvil.deep.rotation.RotationRequest;
 import net.stackanvil.deep.rotation.RotationTurnMode;
 import net.minecraft.client.Minecraft;
+import net.minecraft.world.item.component.SwingAnimation;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -42,7 +43,7 @@ final class WorldInteraction {
         InteractionResult result = client.gameMode.useItemOn(player, InteractionHand.MAIN_HAND,
                 new BlockHitResult(hit, face, pos, false));
         if (result.consumesAction()) {
-            player.swing(InteractionHand.MAIN_HAND);
+            player.swing(InteractionHand.MAIN_HAND, SwingAnimation.DEFAULT, false);
             return ActionResult.DONE;
         }
         return ActionResult.WAITING;
@@ -57,7 +58,7 @@ final class WorldInteraction {
         OptionalInt slot = InventoryActions.findHotbarSlot(player.getInventory(), toolPredicate);
         slot.ifPresent(value -> InventoryActions.selectHotbarSlot(player, value));
         if (client.gameMode.continueDestroyBlock(pos, face)) {
-            player.swing(InteractionHand.MAIN_HAND);
+            player.swing(InteractionHand.MAIN_HAND, SwingAnimation.DEFAULT, false);
             return true;
         }
         return false;

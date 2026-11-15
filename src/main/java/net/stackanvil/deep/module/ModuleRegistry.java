@@ -217,7 +217,6 @@ import net.stackanvil.deep.module.impl.NoRotateSetModule;
 import net.stackanvil.deep.module.impl.NoSlotSetModule;
 import net.stackanvil.deep.module.impl.NoSlowBreakModule;
 import net.stackanvil.deep.module.impl.NoSlowModule;
-import net.stackanvil.deep.module.impl.NoSwingModule;
 import net.stackanvil.deep.module.impl.NoWebModule;
 import net.stackanvil.deep.module.impl.NotebotModule;
 import net.stackanvil.deep.module.impl.NotifierModule;
@@ -431,7 +430,6 @@ public final class ModuleRegistry {
         modules.register(new TrueSightModule());
         modules.register(new NoRenderModule());
         modules.register(new TrajectoriesModule());
-        modules.register(new NoSwingModule());
         modules.register(new TntTimerModule());
         modules.register(new ZoomModule());
         modules.register(new BlurModule());

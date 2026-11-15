@@ -21,7 +21,7 @@ import net.minecraft.client.player.ClientInput;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
-import org.lwjgl.glfw.GLFW;
+import com.mojang.blaze3d.platform.InputConstants;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -165,6 +165,6 @@ public final class ModuleManager {
     private static boolean keyPressed(final Minecraft client, final int key) {
         return client != null
                 && client.getWindow() != null
-                && GLFW.glfwGetKey(client.getWindow().handle(), key) == GLFW.GLFW_PRESS;
+                && InputConstants.isKeyDown(key);
     }
 }

@@ -8,6 +8,7 @@ import net.stackanvil.deep.render.MarkerStyle;
 import net.stackanvil.deep.setting.BooleanSetting;
 import net.stackanvil.deep.setting.NumberSetting;
 import net.minecraft.client.Minecraft;
+import net.minecraft.world.item.component.SwingAnimation;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -169,7 +170,7 @@ public final class CrystalAuraModule extends Module {
             return false;
         }
         client.gameMode.attack(client.player, best);
-        client.player.swing(net.minecraft.world.InteractionHand.MAIN_HAND);
+        client.player.swing(net.minecraft.world.InteractionHand.MAIN_HAND, SwingAnimation.DEFAULT, false);
         return true;
     }
 

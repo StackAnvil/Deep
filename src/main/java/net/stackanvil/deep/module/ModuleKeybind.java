@@ -2,7 +2,7 @@ package net.stackanvil.deep.module;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import org.lwjgl.glfw.GLFW;
+import org.lwjgl.sdl.SDLScancode;
 
 public final class ModuleKeybind {
 
@@ -10,7 +10,7 @@ public final class ModuleKeybind {
     private ModuleBindAction action;
 
     public ModuleKeybind() {
-        this(GLFW.GLFW_KEY_UNKNOWN, ModuleBindAction.TOGGLE);
+        this(SDLScancode.SDL_SCANCODE_UNKNOWN, ModuleBindAction.TOGGLE);
     }
 
     public ModuleKeybind(final int key, final ModuleBindAction action) {
@@ -23,7 +23,7 @@ public final class ModuleKeybind {
     }
 
     public boolean bound() {
-        return this.key != GLFW.GLFW_KEY_UNKNOWN;
+        return this.key != SDLScancode.SDL_SCANCODE_UNKNOWN;
     }
 
     public int key() {

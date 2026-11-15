@@ -2,7 +2,7 @@ package net.stackanvil.deep.rivet;
 
 import net.lenni0451.rivet.input.keyboard.Key;
 import org.junit.jupiter.api.Test;
-import org.lwjgl.glfw.GLFW;
+import org.lwjgl.sdl.SDLScancode;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -10,19 +10,19 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class RivetInputMapperTest {
 
     @Test
-    void mapsKnownGlfwKeys() {
-        assertEquals(Key.A, RivetInputMapper.fromGlfw(GLFW.GLFW_KEY_A).orElseThrow());
-        assertEquals(Key.KP_ENTER, RivetInputMapper.fromGlfw(GLFW.GLFW_KEY_KP_ENTER).orElseThrow());
+    void mapsKnownScancodes() {
+        assertEquals(Key.A, RivetInputMapper.fromScancode(SDLScancode.SDL_SCANCODE_A).orElseThrow());
+        assertEquals(Key.KP_ENTER, RivetInputMapper.fromScancode(SDLScancode.SDL_SCANCODE_KP_ENTER).orElseThrow());
     }
 
     @Test
-    void ignoresUnknownGlfwKeys() {
-        assertTrue(RivetInputMapper.fromGlfw(GLFW.GLFW_KEY_UNKNOWN).isEmpty());
+    void ignoresUnknownScancodes() {
+        assertTrue(RivetInputMapper.fromScancode(SDLScancode.SDL_SCANCODE_UNKNOWN).isEmpty());
     }
 
     @Test
-    void mapsRivetKeysBackToGlfw() {
-        assertEquals(GLFW.GLFW_KEY_RIGHT_SUPER, RivetInputMapper.toGlfw(Key.RIGHT_SUPER).orElseThrow());
-        assertEquals(GLFW.GLFW_KEY_SPACE, RivetInputMapper.toGlfw(Key.SPACE).orElseThrow());
+    void mapsRivetKeysBackToScancodes() {
+        assertEquals(SDLScancode.SDL_SCANCODE_RGUI, RivetInputMapper.toScancode(Key.RIGHT_SUPER).orElseThrow());
+        assertEquals(SDLScancode.SDL_SCANCODE_SPACE, RivetInputMapper.toScancode(Key.SPACE).orElseThrow());
     }
 }

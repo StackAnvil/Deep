@@ -5,7 +5,7 @@ human or an AI can recreate the look and behaviour from scratch. It is a *design
 the intent, the exact tokens, the layout rules, and the rendering techniques. It is not a line-by-line
 code dump — where an algorithm matters, the algorithm is described.
 
-Stack it was built on: Minecraft 26.2, Fabric, Java 25, the **Rivet** UI layout library
+Stack it was built on: Minecraft 26.3, Fabric, Java 25, the **Rivet** UI layout library
 (`com.github.Lenni0451.rivet`), and **Blaze3D** for all rendering. Nothing is drawn with a legacy
 immediate-mode path; every pixel goes through Blaze3D render pipelines.
 

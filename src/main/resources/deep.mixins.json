@@ -20,7 +20,7 @@
     "GameRendererMixin",
     "GuiMixin",
     "ItemEntityRendererMixin",
-    "ItemInHandRendererMixin",
+    "FirstPersonHandsAndItemsRendererMixin",
     "ItemStackMixin",
     "KeyboardInputMixin",
     "LivingEntityAccessor",

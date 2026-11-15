@@ -55,7 +55,7 @@ import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
-import org.lwjgl.glfw.GLFW;
+import org.lwjgl.sdl.SDLScancode;
 
 import java.io.IOException;
 import java.net.URI;
@@ -306,7 +306,7 @@ public final class DeepCommands {
                 .then(literal("bind")
                         .then(argument("module", StringArgumentType.word())
                                 .suggests(DeepCommands::suggestModules)
-                                .then(argument("key", IntegerArgumentType.integer(GLFW.GLFW_KEY_SPACE))
+                                .then(argument("key", IntegerArgumentType.integer(SDLScancode.SDL_SCANCODE_SPACE))
                                         .executes(context -> bindModule(context, ModuleBindAction.TOGGLE))
                                         .then(argument("action", StringArgumentType.word())
                                                 .suggests(DeepCommands::suggestBindActions)
@@ -972,12 +972,13 @@ public final class DeepCommands {
         if (client == null) {
             return 0;
         }
-        if (client.player.drop(all)) {
-            context.getSource().sendFeedback(Component.literal("Dropped selected " + (all ? "stack" : "item") + "."));
-            return SUCCESS;
+        if (client.player.getMainHandItem().isEmpty()) {
+            context.getSource().sendError(Component.literal("No selected item to drop."));
+            return 0;
         }
-        context.getSource().sendError(Component.literal("No selected item to drop."));
-        return 0;
+        client.gameMode.dropItem(client.player, all);
+        context.getSource().sendFeedback(Component.literal("Dropped selected " + (all ? "stack" : "item") + "."));
+        return SUCCESS;
     }
 
     private static int inventorySummary(final CommandContext<FabricClientCommandSource> context) {
@@ -1263,7 +1264,7 @@ public final class DeepCommands {
         if (module == null) {
             return 0;
         }
-        module.keybind().key(GLFW.GLFW_KEY_UNKNOWN);
+        module.keybind().key(SDLScancode.SDL_SCANCODE_UNKNOWN);
         Deep.CONFIG.save();
         context.getSource().sendFeedback(Component.literal("Unbound " + module.name() + "."));
         return SUCCESS;

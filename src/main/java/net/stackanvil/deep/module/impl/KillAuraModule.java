@@ -8,6 +8,7 @@ import net.stackanvil.deep.setting.SelectSetting;
 import net.stackanvil.deep.rotation.RotationTurnMode;
 import net.stackanvil.deep.target.TargetPolicy;
 import net.minecraft.client.Minecraft;
+import net.minecraft.world.item.component.SwingAnimation;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.LivingEntity;
@@ -203,7 +204,7 @@ public final class KillAuraModule extends Module {
             return;
         }
         client.gameMode.attack(player, entity);
-        player.swing(InteractionHand.MAIN_HAND);
+        player.swing(InteractionHand.MAIN_HAND, SwingAnimation.DEFAULT, false);
         this.timing.markAttack(this.minCps.value(), this.maxCps.value());
     }
 

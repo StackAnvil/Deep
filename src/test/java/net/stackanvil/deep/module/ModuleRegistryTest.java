@@ -75,7 +75,6 @@ class ModuleRegistryTest {
         assertNotNull(modules.find("auto_clicker").orElseThrow());
         assertNotNull(modules.find("no_rotate_set").orElseThrow());
         assertNotNull(modules.find("no_slot_set").orElseThrow());
-        assertNotNull(modules.find("no_swing").orElseThrow());
         assertNotNull(modules.find("chest_stealer").orElseThrow());
         assertNotNull(modules.find("chest_swap").orElseThrow());
         assertNotNull(modules.find("inventory_cleaner").orElseThrow());

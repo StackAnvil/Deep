@@ -6,6 +6,7 @@ import net.stackanvil.deep.setting.BooleanSetting;
 import net.stackanvil.deep.setting.NumberSetting;
 import net.stackanvil.deep.setting.SelectSetting;
 import net.minecraft.client.Minecraft;
+import net.minecraft.world.item.component.SwingAnimation;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -126,7 +127,7 @@ public final class SpeedMineModule extends Module {
                     pos,
                     hit.getDirection()
             ));
-            player.swing(InteractionHand.MAIN_HAND);
+            player.swing(InteractionHand.MAIN_HAND, SwingAnimation.DEFAULT, false);
             this.target = null;
             this.cooldownTicks = this.cooldown.value().intValue();
         }

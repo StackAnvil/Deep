@@ -9,6 +9,7 @@ import net.stackanvil.deep.rotation.RotationTurnMode;
 import net.stackanvil.deep.setting.BooleanSetting;
 import net.stackanvil.deep.setting.NumberSetting;
 import net.minecraft.client.Minecraft;
+import net.minecraft.world.item.component.SwingAnimation;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -97,7 +98,7 @@ public final class PacketMineModule extends Module {
                 direction
         ));
         if (this.swing.value()) {
-            player.swing(InteractionHand.MAIN_HAND);
+            player.swing(InteractionHand.MAIN_HAND, SwingAnimation.DEFAULT, false);
         }
         this.lastTarget = pos;
         this.cooldownTicks = this.delay.value().intValue();

@@ -6,7 +6,7 @@ import net.stackanvil.deep.module.ModuleMode;
 import net.stackanvil.deep.module.ModuleRegistry;
 import net.stackanvil.deep.test.MinecraftBootstrapExtension;
 import net.stackanvil.deep.timer.TimerBalanceService;
-import net.minecraft.network.protocol.game.ServerboundSwingPacket;
+import net.minecraft.network.protocol.game.ServerboundUseItemPacket;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -75,7 +75,7 @@ class LiquidBounceDeepPlanModulesTest {
 
     @Test
     void backtrackPacketClassifierIsConservative() {
-        assertFalse(BacktrackModule.isEntityMovementPacket(new ServerboundSwingPacket(InteractionHand.MAIN_HAND)));
+        assertFalse(BacktrackModule.isEntityMovementPacket(new ServerboundUseItemPacket(InteractionHand.MAIN_HAND, 0, 0.0F, 0.0F)));
     }
 
     @Test

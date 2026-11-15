@@ -3,6 +3,7 @@ package net.stackanvil.deep.module.impl;
 import net.stackanvil.deep.module.Module;
 import net.stackanvil.deep.module.ModuleCategory;
 import net.minecraft.client.Minecraft;
+import net.minecraft.world.item.component.SwingAnimation;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -33,7 +34,7 @@ public final class LiquidInteractModule extends Module {
         }
         InteractionResult result = client.gameMode.useItemOn(player, hand, hit);
         if (result.consumesAction()) {
-            player.swing(hand);
+            player.swing(hand, SwingAnimation.DEFAULT, false);
             return true;
         }
         return false;

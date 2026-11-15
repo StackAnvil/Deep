@@ -5,7 +5,9 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.ClientInput;
 import net.minecraft.world.entity.player.Input;
 import net.minecraft.world.phys.Vec2;
-import org.lwjgl.glfw.GLFW;
+import com.mojang.blaze3d.platform.InputConstants;
+import org.lwjgl.sdl.SDLMouse;
+import org.lwjgl.system.MemoryUtil;
 
 final class InputStates {
 
@@ -13,11 +15,16 @@ final class InputStates {
     }
 
     static boolean keyPressed(final Minecraft client, final int key) {
-        return client.getWindow() != null && GLFW.glfwGetKey(client.getWindow().handle(), key) == GLFW.GLFW_PRESS;
+        return client.getWindow() != null && InputConstants.isKeyDown(key);
     }
 
     static boolean mousePressed(final Minecraft client, final int button) {
-        return client.getWindow() != null && GLFW.glfwGetMouseButton(client.getWindow().handle(), button) == GLFW.GLFW_PRESS;
+        return client.getWindow() != null
+                && (SDLMouse.nSDL_GetMouseState(MemoryUtil.NULL, MemoryUtil.NULL) & mouseButtonMask(button)) != 0;
+    }
+
+    static int mouseButtonMask(final int button) {
+        return button < 1 ? 0 : 1 << (button - 1);
     }
 
     static Input withShift(final Input input, final boolean shift) {

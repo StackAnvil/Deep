@@ -6,6 +6,7 @@ import net.stackanvil.deep.rotation.RotationManager;
 import net.stackanvil.deep.rotation.RotationRequest;
 import net.stackanvil.deep.rotation.RotationTurnMode;
 import net.minecraft.client.Minecraft;
+import net.minecraft.world.item.component.SwingAnimation;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
@@ -80,7 +81,7 @@ public final class BlockPlacer {
         }
         InteractionResult result = client.gameMode.useItemOn(player, InteractionHand.MAIN_HAND, placement.hitResult());
         if (result.consumesAction()) {
-            player.swing(InteractionHand.MAIN_HAND);
+            player.swing(InteractionHand.MAIN_HAND, SwingAnimation.DEFAULT, false);
             return PlacementResult.PLACED;
         }
         return PlacementResult.WAITING;

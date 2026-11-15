@@ -4,7 +4,7 @@ import net.stackanvil.deep.module.Module;
 import net.stackanvil.deep.module.ModuleCategory;
 import net.stackanvil.deep.setting.StringSetting;
 import net.minecraft.client.Minecraft;
-import org.lwjgl.glfw.GLFW;
+import org.lwjgl.sdl.SDLScancode;
 
 public final class MacroModule extends Module {
 
@@ -36,9 +36,9 @@ public final class MacroModule extends Module {
         if (client.player == null || client.gui.screen() != null) {
             return;
         }
-        this.f6Down = this.handle(client, GLFW.GLFW_KEY_F6, this.f6.value(), this.f6Down);
-        this.f7Down = this.handle(client, GLFW.GLFW_KEY_F7, this.f7.value(), this.f7Down);
-        this.f8Down = this.handle(client, GLFW.GLFW_KEY_F8, this.f8.value(), this.f8Down);
+        this.f6Down = this.handle(client, SDLScancode.SDL_SCANCODE_F6, this.f6.value(), this.f6Down);
+        this.f7Down = this.handle(client, SDLScancode.SDL_SCANCODE_F7, this.f7.value(), this.f7Down);
+        this.f8Down = this.handle(client, SDLScancode.SDL_SCANCODE_F8, this.f8.value(), this.f8Down);
     }
 
     private boolean handle(final Minecraft client, final int key, final String action, final boolean previous) {

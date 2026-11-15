@@ -6,6 +6,7 @@ import net.stackanvil.deep.setting.BooleanSetting;
 import net.stackanvil.deep.setting.NumberSetting;
 import net.stackanvil.deep.setting.SelectSetting;
 import net.minecraft.client.Minecraft;
+import net.minecraft.world.item.component.SwingAnimation;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.InteractionHand;
@@ -104,13 +105,13 @@ public final class AutoClickerModule extends Module {
     private boolean attack(final Minecraft client, final LocalPlayer player) {
         if (client.hitResult instanceof EntityHitResult entityHit) {
             client.gameMode.attack(player, entityHit.getEntity());
-            player.swing(InteractionHand.MAIN_HAND);
+            player.swing(InteractionHand.MAIN_HAND, SwingAnimation.DEFAULT, false);
             return true;
         }
         if (client.hitResult instanceof BlockHitResult blockHit && blockHit.getType() == HitResult.Type.BLOCK) {
             boolean started = client.gameMode.startDestroyBlock(blockHit.getBlockPos(), blockHit.getDirection());
             if (started) {
-                player.swing(InteractionHand.MAIN_HAND);
+                player.swing(InteractionHand.MAIN_HAND, SwingAnimation.DEFAULT, false);
             }
             return started;
         }
@@ -120,12 +121,12 @@ public final class AutoClickerModule extends Module {
     private boolean use(final Minecraft client, final LocalPlayer player) {
         if (client.hitResult instanceof BlockHitResult blockHit && blockHit.getType() == HitResult.Type.BLOCK) {
             if (client.gameMode.useItemOn(player, InteractionHand.MAIN_HAND, blockHit).consumesAction()) {
-                player.swing(InteractionHand.MAIN_HAND);
+                player.swing(InteractionHand.MAIN_HAND, SwingAnimation.DEFAULT, false);
                 return true;
             }
         }
         if (client.gameMode.useItem(player, InteractionHand.MAIN_HAND).consumesAction()) {
-            player.swing(InteractionHand.MAIN_HAND);
+            player.swing(InteractionHand.MAIN_HAND, SwingAnimation.DEFAULT, false);
             return true;
         }
         return false;

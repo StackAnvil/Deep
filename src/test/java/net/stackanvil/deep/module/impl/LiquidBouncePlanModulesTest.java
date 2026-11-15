@@ -50,7 +50,7 @@ class LiquidBouncePlanModulesTest {
     @Test
     void exploitAndZoneHelpersHandleInvalidInput() {
         assertEquals("null packet", AntiExploitModule.exploitReason(null, 1024, 64));
-        assertNull(AntiExploitModule.exploitReason(new net.minecraft.network.protocol.game.ServerboundSwingPacket(net.minecraft.world.InteractionHand.MAIN_HAND),
+        assertNull(AntiExploitModule.exploitReason(new net.minecraft.network.protocol.game.ServerboundUseItemPacket(net.minecraft.world.InteractionHand.MAIN_HAND, 0, 0.0F, 0.0F),
                 1024, 64));
         assertEquals(List.of(new net.minecraft.core.BlockPos(1, 64, -2), new net.minecraft.core.BlockPos(5, 70, 5)),
                 ProtectionZonesModule.parseZones("1,64,-2; nope; 5,70,5"));
@@ -63,7 +63,7 @@ class LiquidBouncePlanModulesTest {
         var registryPacket = new net.minecraft.network.protocol.configuration.ClientboundRegistryDataPacket(
                 net.minecraft.core.registries.Registries.BIOME, List.of());
         var tagsPacket = new net.minecraft.network.protocol.common.ClientboundUpdateTagsPacket(java.util.Map.of());
-        var otherPacket = new net.minecraft.network.protocol.game.ServerboundSwingPacket(net.minecraft.world.InteractionHand.MAIN_HAND);
+        var otherPacket = new net.minecraft.network.protocol.game.ServerboundUseItemPacket(net.minecraft.world.InteractionHand.MAIN_HAND, 0, 0.0F, 0.0F);
 
         assertTrue(AntiExploitModule.isRegistrySync(registryPacket));
         assertTrue(AntiExploitModule.isRegistrySync(tagsPacket));
