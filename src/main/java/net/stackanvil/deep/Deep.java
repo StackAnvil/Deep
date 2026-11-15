@@ -2,6 +2,7 @@ package net.stackanvil.deep;
 
 import net.stackanvil.deep.command.DeepCommands;
 import net.stackanvil.deep.config.ClientConfig;
+import net.stackanvil.deep.config.ConfigBackups;
 import net.stackanvil.deep.event.ClientTickEvent;
 import net.stackanvil.deep.event.HudRenderEvent;
 import net.stackanvil.deep.event.WorldRenderEvent;
@@ -36,6 +37,9 @@ import org.lwjgl.glfw.GLFW;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
+import java.time.Clock;
+
 public final class Deep implements ClientModInitializer {
 
     public static final String MOD_ID = "deep";
@@ -54,6 +58,7 @@ public final class Deep implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
         DeepRenderPipelines.initialize();
+        backupConfig();
         ModuleRegistry.registerDefaults(MODULES);
         FRIENDS.load();
         PROFILES.load();
@@ -79,6 +84,15 @@ public final class Deep implements ClientModInitializer {
                     MODULES.call(new HudRenderEvent(Minecraft.getInstance(), graphics));
                     ToggleNotifications.render(Minecraft.getInstance(), graphics);
                 });
+    }
+
+    private static void backupConfig() {
+        try {
+            ConfigBackups.defaults().backup(Clock.systemDefaultZone())
+                    .ifPresent(archive -> LOGGER.info("Backed up Deep config to {}", archive));
+        } catch (IOException exception) {
+            LOGGER.warn("Failed to back up Deep config", exception);
+        }
     }
 
     private void onClientTick(final Minecraft client) {
